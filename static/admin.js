@@ -44,10 +44,14 @@ async function logout() {
 }
 
 function switchTab(tabId) {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'" + tabId + "'")) {
+            btn.classList.add('active');
+        }
+    });
     document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
     
-    event.target.classList.add('active');
     document.getElementById('tab-' + tabId).classList.remove('hidden');
 }
 
