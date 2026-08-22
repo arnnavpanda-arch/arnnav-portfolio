@@ -1,23 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arnnav Panda | Full-Stack Software Developer</title>
-    <meta name="description" content="Portfolio of Arnnav Panda, Full-Stack Software Developer and B.Tech CSE student at NIST University.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arnnav Panda | Full-Stack Developer</title>
+
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
 </head>
-<body class="intro-active">
-    <!-- 3D Background Canvas -->
-    <canvas id="bg-canvas"></canvas>
+<body style="overflow: hidden;">
+
+    <!-- TERMINAL INTRO OVERLAY -->
+    <div id="intro-terminal" class="intro-overlay">
+        <div class="terminal-box">
+            <div class="terminal-header">
+                <span class="dot" style="background:#ef4444;"></span>
+                <span class="dot" style="background:#eab308;"></span>
+                <span class="dot" style="background:#22c55e;"></span>
+                <span class="term-title">Arnnav panda portfolio</span>
+            </div>
+            <div class="terminal-body">
+                <p>> Arnnavpanda Full-Stack Software Developer</p>
+                <p>> Establishing secure connection...</p>
+                <p>> Loading portfolio data...</p>
+                <p>> Access Granted.</p>
+                <button id="btn-enter" class="btn primary-btn term-go-btn" style="margin-top: 1.5rem; width: 100%;">GO</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SPACE BACKGROUND -->
+    <div class="space">
+        <div class="stars"></div>
+        <div class="stars2"></div>
+        <div class="nebula"></div>
+        <div class="planet"><div class="ring"></div></div>
+        <div class="meteor m1"></div>
+        <div class="meteor m2"></div>
+        <div class="meteor m3"></div>
+        <div class="meteor m4"></div>
+    </div>
 
     <!-- Intro Screen -->
     <div id="intro-screen">
-        <div class="intro-content glass-card">
+        <div class="intro-content">
             <h1>WELCOME TO MY PORTFOLIO</h1>
             <h2>ARNNAV PANDA</h2>
             <h3 style="color: #0ea5e9; font-weight: 400; margin-bottom: 2rem;">Full-Stack Software Developer</h3>
@@ -25,31 +53,27 @@
         </div>
     </div>
 
-    <!-- Terminal Screen -->
+    <!-- 3D Terminal Screen -->
     <div id="terminal-screen">
-      <div class="terminal">
-        <div class="header">
-          ● ● ● &nbsp; ARNNAV-PORTFOLIO
+        <div class="terminal">
+            <div class="header">
+                Terminal - arnnav@portfolio ~
+            </div>
+            <div class="body" id="term-body">
+                > Initializing system...<br>
+                > Loading modules...<br>
+                > Access granted.<br>
+                > Welcome to the 3D Developer Terminal!<br>
+                > user@arnnav:~$ <span class="cursor"></span>
+            </div>
         </div>
-        <div class="body">
-          $ python developer.py<br>
-          Loading portfolio...<br>
-          Loading projects...<br>
-          Loading skills...<br>
-          <br>
-          Developer: Arnnav Panda<br>
-          Role: Full Stack Developer<br>
-          <br>
-          $ start_portfolio<span class="cursor"></span>
-        </div>
-      </div>
     </div>
 
     <div id="main-wrapper">
     <nav class="glass-nav">
         <div class="nav-content">
             <div class="logo" style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="openLightbox()">
-                <img src="arnnav-profile.jpg" alt="AP" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-primary);">
+                <img id="nav-profile-img" src="" alt="AP" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-primary); display: none;">
                 <span>AP.</span>
             </div>
             <ul class="nav-links">
@@ -74,12 +98,13 @@
                     <a href="mailto:arnnav.panda.cse.2024@nist.edu"><i class="fa-solid fa-envelope"></i> Email Me</a>
                     <a href="http://linkedin.com/in/arnnav-panda-583a85324" target="_blank"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
                 </p>
-                <p class="summary">
-                    Third-year Computer Science & Engineering student at NIST University with hands-on full-stack development experience, having independently built three production-style platforms using Python/Flask, Node.js/Express.js, MongoDB, and JavaScript. Comfortable across the stack — from REST API design and real-time features to cloud deployment. Seeking a Full-Stack Developer / Software Developer role to build and scale web applications.
+                <p class="summary" id="dyn-about">
+                    <!-- Dynamic About -->
                 </p>
                 <div class="hero-actions">
                     <a href="#projects" class="btn primary-btn">View My Work</a>
                     <a href="tel:+916371132482" class="btn secondary-btn">Contact Me</a>
+                    <a id="btn-download-cv" href="#" class="btn secondary-btn hidden" style="border-color: #22c55e; color: #22c55e;" download><i class="fa-solid fa-download"></i> Download CV</a>
                 </div>
             </div>
         </section>
@@ -87,170 +112,39 @@
         <!-- Technical Skills -->
         <section id="skills" class="section">
             <h2 class="section-title">Technical Skills</h2>
-            <div class="skills-grid">
-                <div class="skill-category glass-card">
-                    <h3>Languages</h3>
-                    <div class="tags">
-                        <span class="tag">Python</span>
-                        <span class="tag">C</span>
-                        <span class="tag">C++</span>
-                        <span class="tag">JavaScript</span>
-                        <span class="tag">Java</span>
-                    </div>
-                </div>
-                <div class="skill-category glass-card">
-                    <h3>Web Development</h3>
-                    <div class="tags">
-                        <span class="tag">HTML</span>
-                        <span class="tag">CSS</span>
-                        <span class="tag">JavaScript</span>
-                        <span class="tag">Flask</span>
-                        <span class="tag">Node.js</span>
-                        <span class="tag">Express.js</span>
-                        <span class="tag">REST APIs</span>
-                    </div>
-                </div>
-                <div class="skill-category glass-card">
-                    <h3>Database & Tools</h3>
-                    <div class="tags">
-                        <span class="tag">MongoDB</span>
-                        <span class="tag">MongoDB Atlas</span>
-                        <span class="tag">SQL</span>
-                        <span class="tag">Git</span>
-                        <span class="tag">GitHub</span>
-                        <span class="tag">Render</span>
-                        <span class="tag">VS Code</span>
-                        <span class="tag">Postman</span>
-                    </div>
-                </div>
+            <div class="skills-grid" id="dyn-skills">
+                <!-- Dynamic Skills -->
+            </div>
+        </section>
+        <!-- Projects 3D Gallery -->
+        <section class="gallery-3d" id="projects">
+            <h2>PROJECT<br><span>GALLERY</span></h2>
+            <div class="cube-gallery" id="dyn-cube">
+                <!-- Dynamically generated projects will appear here -->
             </div>
         </section>
 
-        <!-- Projects -->
-        <section id="projects" class="section">
-            <h2 class="section-title">Projects</h2>
-
-            <!-- 3D Universe Animation -->
-            <div class="universe-wrapper">
-                <div class="universe">
-                  <div class="center">
-                    ARNNAV<br>PANDA
-                  </div>
-                  <div class="project p1">
-                    AURA<br>CareerForge
-                  </div>
-
-                  <div class="project p3">
-                    Logistics<br>Platform
-                  </div>
-                  <div class="project p4">
-                    Shopping<br>Platform
-                  </div>
-                </div>
-            </div>
-            <div class="projects-grid">
-                <!-- Project 1 -->
-                <div class="project-card glass-card">
-                    <div class="project-header">
-                        <h3>AURA Dispatch</h3>
-                        <span class="project-role">Full-Stack Developer</span>
-                    </div>
-                    <p class="project-subtitle">Logistics & Agency Management Platform</p>
-                    <p class="project-desc">
-                        Full-stack platform managing logistics-agency operations: attendance, staff management, shop assignment, delivery tracking, payroll, and commissions. Built delivery OTP verification and an administrative control panel with real-time updates via Flask-SocketIO. Deployed on Render.
-                    </p>
-                    <div class="tech-stack tags">
-                        <span class="tag">Flask</span>
-                        <span class="tag">Flask-SocketIO</span>
-                        <span class="tag">MongoDB</span>
-                        <span class="tag">Render</span>
-                    </div>
-                </div>
-
-                <!-- Project 2 -->
-                <div class="project-card glass-card">
-                    <div class="project-header">
-                        <h3>AURA Shopping Platform</h3>
-                        <span class="project-role">Full-Stack Developer</span>
-                    </div>
-                    <p class="project-subtitle">Hyperlocal Shopping & Delivery Platform</p>
-                    <p class="project-desc">
-                        Connected local customers with nearby merchants through a centralized shopping and delivery system with customer storefront, merchant operations, and order management. Built REST APIs with Express.js and MongoDB, deployed on Render.
-                    </p>
-                    <div class="tech-stack tags">
-                        <span class="tag">Node.js</span>
-                        <span class="tag">Express.js</span>
-                        <span class="tag">MongoDB</span>
-                        <span class="tag">Render</span>
-                    </div>
-                </div>
-
-                <!-- Project 3 -->
-                <div class="project-card glass-card">
-                    <div class="project-header">
-                        <h3>AURA CareerForge</h3>
-                        <span class="project-role">Full-Stack Developer</span>
-                    </div>
-                    <p class="project-subtitle">Recruitment and career-management platform</p>
-                    <p class="project-desc">
-                        Developed a full-stack recruitment management SPA with a responsive Glassmorphism UI, built scalable Flask REST APIs with MongoDB Atlas for applicant data and document management, implemented real-time cross-device auto-sync using JavaScript polling and DOM change detection, and automated dynamic A4-format Offer Letter generation using database-driven templates for print-ready PDF output.
-                    </p>
-                    <div class="tech-stack tags">
-                        <span class="tag">Python</span>
-                        <span class="tag">Flask</span>
-                        <span class="tag">MongoDB</span>
-                        <span class="tag">HTML/CSS/JS</span>
-                    </div>
-                </div>
+        <!-- Project Details -->
+        <section id="projects-details" class="section">
+            <h2 class="section-title">Project Details</h2>
+            <div class="projects-grid" id="dyn-projects-detailed">
+                <!-- Detailed projects -->
             </div>
         </section>
 
         <!-- Experience & Internship -->
         <section id="experience" class="section">
             <h2 class="section-title">Internship / Experience</h2>
-            <div class="timeline">
-                <div class="timeline-item glass-card">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-content">
-                        <h3>Full Stack Python Internship Program</h3>
-                        <h4>Deweagle Technologies, Patna</h4>
-                        <span class="timeline-date">2026</span>
-                        <p>
-                            Completed the Full Stack Python Internship Program, focusing on full-stack development.
-                        </p>
-                    </div>
-                </div>
+            <div class="timeline" id="dyn-experience">
+                <!-- Dynamic Experience -->
             </div>
         </section>
 
         <!-- Education -->
         <section id="education" class="section">
             <h2 class="section-title">Education</h2>
-            <div class="education-grid">
-                <div class="edu-card glass-card">
-                    <h3>B.Tech, Computer Science & Engineering</h3>
-                    <h4>NIST University</h4>
-                    <div class="edu-details">
-                        <span>Expected 2028</span>
-                        <span class="highlight">7.61 CGPA</span>
-                    </div>
-                </div>
-                <div class="edu-card glass-card">
-                    <h3>Class XII</h3>
-                    <h4>Aska Science Higher Secondary School</h4>
-                    <div class="edu-details">
-                        <span>2024</span>
-                        <span class="highlight">67%</span>
-                    </div>
-                </div>
-                <div class="edu-card glass-card">
-                    <h3>Class X</h3>
-                    <h4>Saraswati Shishu Vidya Mandir</h4>
-                    <div class="edu-details">
-                        <span>2022</span>
-                        <span class="highlight">82%</span>
-                    </div>
-                </div>
+            <div class="education-grid" id="dyn-education">
+                <!-- Dynamic Education -->
             </div>
         </section>
 
@@ -258,27 +152,43 @@
         <section id="awards" class="section two-col-grid">
             <div class="certifications">
                 <h2 class="section-title">Certifications</h2>
-                <ul class="list-items glass-card">
-                    <li>
-                        <strong>Certificate in C++</strong>
-                        <span>National Board of Computer Education, India (2025)</span>
-                    </li>
-                    <li>
-                        <strong>Full Stack Python Internship Program</strong>
-                        <span>Deweagle Technologies, Patna (2026)</span>
-                    </li>
+                <ul class="list-items glass-card" id="dyn-certifications">
+                    <!-- Dynamic Certifications will go here -->
                 </ul>
             </div>
             
             <div class="achievements">
                 <h2 class="section-title">Achievements</h2>
-                <div class="achievement-card glass-card">
-                    <div class="icon">🏆</div>
-                    <p>Awarded a laptop for securing high marks in the Class XII examination at the block level — recognized for academic performance.</p>
+                <div id="dyn-awards">
+                    <!-- Dynamic Awards will go here -->
                 </div>
             </div>
         </section>
 
+        <!-- Gallery -->
+        <section id="gallery" class="section">
+            <h2 class="section-title">Gallery</h2>
+            <div style="display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; flex-wrap: wrap; justify-content: center;" id="dyn-gallery">
+                <!-- Dynamic Gallery Images -->
+            </div>
+        </section>
+
+        <!-- Feedback Section -->
+        <section id="feedback" class="section">
+            <h2 class="section-title">Leave Feedback</h2>
+            <div class="glass-card" style="max-width: 500px; margin: 0 auto; padding: 2rem; text-align: center;">
+                <input type="text" id="fb-name" placeholder="Your Name" style="width:100%; padding: 0.75rem; margin-bottom: 1rem; background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); border-radius: 8px; color: white;">
+                <div id="fb-stars" style="font-size: 2rem; margin-bottom: 1rem; cursor: pointer; display: flex; justify-content: center; gap: 5px;">
+                    <i class="fa-solid fa-star fb-star" data-val="1"></i>
+                    <i class="fa-solid fa-star fb-star" data-val="2"></i>
+                    <i class="fa-solid fa-star fb-star" data-val="3"></i>
+                    <i class="fa-solid fa-star fb-star" data-val="4"></i>
+                    <i class="fa-solid fa-star fb-star" data-val="5"></i>
+                </div>
+                <button class="btn primary-btn" onclick="submitFeedback()" style="width: 100%;">Submit Feedback</button>
+                <p id="fb-msg" style="margin-top: 1rem; color: #22c55e; display: none;">Thank you for your feedback!</p>
+            </div>
+        </section>
 
     </main>
     <footer class="glass-footer">
@@ -286,15 +196,16 @@
     </footer>
     </div>
 
-    <!-- Lightbox for Profile Picture -->
+    <!-- Lightbox for Profile Picture / Gallery -->
     <div id="photo-lightbox" class="lightbox" onclick="closeLightbox()">
         <span class="lightbox-close"><i class="fa-solid fa-xmark"></i></span>
-        <img src="arnnav-profile.jpg" alt="Arnnav Panda Full" class="lightbox-img">
+        <img src="" alt="Gallery Image" class="lightbox-img" id="lightbox-main-img" style="display: none;">
     </div>
 
     <!-- 3D Animation Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
-    <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="script.js?v=5"></script>
 </body>
 </html>

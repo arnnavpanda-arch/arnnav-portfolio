@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { padding: 2rem; }
+        .admin-container { max-width: 1000px; margin: 0 auto; }
+        .hidden { display: none !important; }
+        .login-box { max-width: 400px; margin: 100px auto; padding: 2rem; background: var(--card-bg); border-radius: 15px; border: 1px solid var(--border-color); }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: var(--text-secondary); }
+        .form-group input, .form-group textarea { width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.5); border: 1px solid var(--border-color); border-radius: 8px; color: white; }
+        
+        .tabs { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; overflow-x: auto;}
+        .tab-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.1rem; font-weight: 500; padding: 0.5rem 1rem; }
+        .tab-btn.active { color: var(--accent-primary); border-bottom: 2px solid var(--accent-primary); }
+        
+        .panel { background: var(--card-bg); padding: 2rem; border-radius: 15px; border: 1px solid var(--border-color); margin-bottom: 2rem; }
+        .item-list { margin-top: 2rem; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border-color); }
+        .item-row button { background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; }
+        
+        h2 { margin-bottom: 1.5rem; color: var(--accent-primary); }
+    </style>
+</head>
+<body>
+    <!-- SPACE BACKGROUND -->
+    <div class="space">
+        <div class="stars"></div>
+        <div class="stars2"></div>
+        <div class="nebula"></div>
+        <div class="planet"><div class="ring"></div></div>
+        <div class="meteor m1"></div>
+        <div class="meteor m2"></div>
+        <div class="meteor m3"></div>
+        <div class="meteor m4"></div>
+    </div>
+
+    <div class="admin-container">
+        <!-- Login Screen -->
+        <div id="login-screen" class="login-box">
+            <h2>Admin Login</h2>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="admin-password">
+            </div>
+            <button class="btn primary-btn" onclick="login()">Login</button>
+            <p id="login-error" style="color: #ef4444; margin-top: 1rem; display: none;">Invalid password</p>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h1>Admin Dashboard</h1>
+                <div>
+                    <a href="/" target="_blank" class="btn secondary-btn" style="margin-right: 1rem;">View Site</a>
+                    <button class="btn primary-btn" onclick="logout()" style="background: #ef4444;">Logout</button>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('about')">About</button>
+                <button class="tab-btn" onclick="switchTab('skills')">Skills</button>
+                <button class="tab-btn" onclick="switchTab('projects')">Projects</button>
+                <button class="tab-btn" onclick="switchTab('experience')">Experience</button>
+                <button class="tab-btn" onclick="switchTab('education')">Education</button>
+                <button class="tab-btn" onclick="switchTab('awards')">Awards</button>
+                <button class="tab-btn" onclick="switchTab('certifications')">Certifications</button>
+                <button class="tab-btn" onclick="switchTab('gallery')">Gallery</button>
+                <button class="tab-btn" onclick="switchTab('resume')">Resume / CV</button>
+                <button class="tab-btn" onclick="switchTab('feedback')">Feedback</button>
+            </div>
+
+            <!-- About Tab -->
+            <div id="tab-about" class="panel tab-content">
+                <h2>Manage About & Profile</h2>
+                
+                <h3>Profile Photo Management</h3>
+                <div class="form-group">
+                    <label>Upload New Profile Photo (Image only)</label>
+                    <div style="display:flex; gap:10px;">
+                        <input type="file" id="profile-upload" accept="image/*" style="flex:1;">
+                        <button class="btn primary-btn" onclick="uploadProfilePhoto()">Upload Photo</button>
+                    </div>
+                </div>
+                <button class="btn secondary-btn" style="border-color:#ef4444; color:#ef4444; margin-bottom: 2rem;" onclick="removeProfilePhoto()">Remove Profile Photo</button>
+                <div id="profile-current"></div>
+
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 2rem 0;">
+
+                <h3>About Text Management</h3>
+                <div class="form-group">
+                    <label>Summary Text</label>
+                    <textarea id="about-text" rows="5"></textarea>
+                </div>
+                <button class="btn primary-btn" onclick="saveAbout()">Save About</button>
+
+            </div>
+
+            <!-- Skills Tab -->
+            <div id="tab-skills" class="panel tab-content hidden">
+                <h2>Add Skill Category</h2>
+                <div class="form-group">
+                    <label>Category Name (e.g. Languages)</label>
+                    <input type="text" id="skill-cat">
+                </div>
+                <div class="form-group">
+                    <label>Skills (comma separated, e.g. Python, Java, C++)</label>
+                    <input type="text" id="skill-items">
+                </div>
+                <button class="btn primary-btn" onclick="addSkill()">Add Category</button>
+                <div class="item-list" id="skills-list"></div>
+            </div>
+
+            <!-- Projects Tab -->
+            <div id="tab-projects" class="panel tab-content hidden">
+                <h2>Add Project</h2>
+                <div class="form-group"><label>Title</label><input type="text" id="proj-title"></div>
+                <div class="form-group"><label>Emoji Icon</label><input type="text" id="proj-emoji" placeholder="e.g. ⚡, 🛒, 🚀"></div>
+                <div class="form-group"><label>Description</label><textarea id="proj-desc" rows="3"></textarea></div>
+                <div class="form-group"><label>Link (Optional)</label><input type="text" id="proj-link"></div>
+                <button class="btn primary-btn" onclick="addProject()">Add Project</button>
+                <div class="item-list" id="projects-list"></div>
+            </div>
+            
+            <!-- Experience Tab -->
+            <div id="tab-experience" class="panel tab-content hidden">
+                <h2>Add Experience / Internship</h2>
+                <div class="form-group"><label>Role / Title</label><input type="text" id="exp-title"></div>
+                <div class="form-group"><label>Company</label><input type="text" id="exp-company"></div>
+                <div class="form-group"><label>Date / Duration</label><input type="text" id="exp-date"></div>
+                <div class="form-group"><label>Description</label><textarea id="exp-desc" rows="3"></textarea></div>
+                <button class="btn primary-btn" onclick="addExperience()">Add Experience</button>
+                <div class="item-list" id="experience-list"></div>
+            </div>
+
+            <!-- Education Tab -->
+            <div id="tab-education" class="panel tab-content hidden">
+                <h2>Add Education</h2>
+                <div class="form-group"><label>Degree</label><input type="text" id="edu-degree"></div>
+                <div class="form-group"><label>Institution</label><input type="text" id="edu-inst"></div>
+                <div class="form-group"><label>Date / Year</label><input type="text" id="edu-date"></div>
+                <div class="form-group"><label>Description</label><textarea id="edu-desc" rows="3"></textarea></div>
+                <button class="btn primary-btn" onclick="addEducation()">Add Education</button>
+                <div class="item-list" id="education-list"></div>
+            </div>
+
+            <!-- Awards Tab -->
+            <div id="tab-awards" class="panel tab-content hidden">
+                <h2>Add Award / Achievement</h2>
+                <div class="form-group"><label>Title</label><input type="text" id="awd-title"></div>
+                <div class="form-group"><label>Description</label><textarea id="awd-desc" rows="3"></textarea></div>
+                <button class="btn primary-btn" onclick="addAward()">Add Award</button>
+                <div class="item-list" id="awards-list"></div>
+            </div>
+
+            <!-- Certifications Tab -->
+            <div id="tab-certifications" class="panel tab-content hidden">
+                <h2>Add Certification</h2>
+                <div class="form-group"><label>Title</label><input type="text" id="cert-title"></div>
+                <div class="form-group"><label>Issuer / Details</label><input type="text" id="cert-desc"></div>
+                <button class="btn primary-btn" onclick="addCertification()">Add Certification</button>
+                <div class="item-list" id="certifications-list"></div>
+            </div>
+
+            <!-- Gallery Tab -->
+            <div id="tab-gallery" class="panel tab-content hidden">
+                <h2>Upload Gallery Photo</h2>
+                <div class="form-group"><label>Select Image File</label><input type="file" id="gal-file" accept="image/*"></div>
+                <div class="form-group"><label>Caption (Optional)</label><input type="text" id="gal-caption"></div>
+                <button class="btn primary-btn" onclick="uploadGallery()">Upload Photo</button>
+                <p id="gal-status" style="margin-top:1rem;"></p>
+                <div class="item-list" id="gallery-list"></div>
+            </div>
+
+            <!-- Resume Tab -->
+            <div id="tab-resume" class="panel tab-content hidden">
+                <h2>Upload Resume / CV</h2>
+                <div class="form-group">
+                    <label>Select PDF or Word File</label>
+                    <input type="file" id="res-file" accept=".pdf,.doc,.docx">
+                </div>
+                <button class="btn primary-btn" onclick="uploadResume()">Upload Resume</button>
+                <button class="btn" style="background-color: #ef4444; margin-left: 10px;" onclick="removeResume()">Remove Resume</button>
+                <p id="res-status" style="margin-top:1rem;"></p>
+                <div id="resume-current"></div>
+            </div>
+
+            <!-- Feedback Tab -->
+            <div id="tab-feedback" class="panel tab-content hidden">
+                <h2>User Feedback</h2>
+                <div class="item-list" id="feedback-list"></div>
+            </div>
+
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="admin.js?v=3"></script>
+</body>
+</html>
