@@ -62,34 +62,52 @@ def is_auth():
 # --- Dynamic Content API (Public) ---
 @app.route('/api/data', methods=['GET'])
 def get_data():
-    about = db.about.find_one({}, {'_id': 0})
-    skills = list(db.skills.find({}, {'_id': 1, 'category': 1, 'items': 1}))
-    projects = list(db.projects.find({}, {'_id': 1, 'title': 1, 'description': 1, 'link': 1}))
-    experience = list(db.experience.find({}, {'_id': 1, 'title': 1, 'company': 1, 'date': 1, 'description': 1}))
-    education = list(db.education.find({}, {'_id': 1, 'degree': 1, 'institution': 1, 'date': 1, 'description': 1}))
-    awards = list(db.awards.find({}, {'_id': 1, 'title': 1, 'description': 1}))
-    certifications = list(db.certifications.find({}, {'_id': 1, 'title': 1, 'description': 1}))
-    gallery = list(db.gallery.find({}, {'_id': 1, 'file_id': 1, 'caption': 1}))
-    feedback = list(db.feedback.find({}, {'_id': 1, 'name': 1, 'stars': 1}))
-    resume = db.resume.find_one({}, {'_id': 0, 'file_id': 1})
+    from concurrent.futures import ThreadPoolExecutor
     
+    def fetch_coll(name, query, projection, is_list=True):
+        if is_list:
+            return name, list(db[name].find(query, projection))
+        else:
+            return name, db[name].find_one(query, projection)
+
+    queries = [
+        ('about', {}, {'_id': 0}, False),
+        ('skills', {}, {'_id': 1, 'category': 1, 'items': 1}, True),
+        ('projects', {}, {'_id': 1, 'title': 1, 'description': 1, 'link': 1}, True),
+        ('experience', {}, {'_id': 1, 'title': 1, 'company': 1, 'date': 1, 'description': 1}, True),
+        ('education', {}, {'_id': 1, 'degree': 1, 'institution': 1, 'date': 1, 'description': 1}, True),
+        ('awards', {}, {'_id': 1, 'title': 1, 'description': 1}, True),
+        ('certifications', {}, {'_id': 1, 'title': 1, 'description': 1}, True),
+        ('gallery', {}, {'_id': 1, 'file_id': 1, 'caption': 1}, True),
+        ('feedback', {}, {'_id': 1, 'name': 1, 'stars': 1}, True),
+        ('resume', {}, {'_id': 0, 'file_id': 1}, False),
+        ('profile_photo', {}, {'_id': 0, 'file_id': 1}, False)
+    ]
+
+    results = {}
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(fetch_coll, *q) for q in queries]
+        for future in futures:
+            name, data = future.result()
+            results[name] = data
+
     # Convert ObjectIds to strings
-    for lst in [skills, projects, experience, education, awards, certifications, gallery, feedback]:
-        for item in lst:
+    for coll in ['skills', 'projects', 'experience', 'education', 'awards', 'certifications', 'gallery', 'feedback']:
+        for item in results[coll]:
             item['_id'] = str(item['_id'])
             
     return jsonify({
-        "about": about,
-        "skills": skills,
-        "projects": projects,
-        "experience": experience,
-        "education": education,
-        "awards": awards,
-        "certifications": certifications,
-        "gallery": gallery,
-        "feedback": feedback,
-        "resume": resume.get('file_id') if resume else None,
-        "profile_photo": db.profile_photo.find_one({}, {'_id': 0, 'file_id': 1}).get('file_id') if db.profile_photo.find_one({}, {'_id': 0, 'file_id': 1}) else None
+        "about": results['about'],
+        "skills": results['skills'],
+        "projects": results['projects'],
+        "experience": results['experience'],
+        "education": results['education'],
+        "awards": results['awards'],
+        "certifications": results['certifications'],
+        "gallery": results['gallery'],
+        "feedback": results['feedback'],
+        "resume": results['resume'].get('file_id') if results['resume'] else None,
+        "profile_photo": results['profile_photo'].get('file_id') if results['profile_photo'] else None
     })
 
 def notify_clients():
