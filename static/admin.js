@@ -16,6 +16,9 @@ async function checkAuth() {
 }
 
 async function login() {
+    const btn = document.querySelector('button[onclick="login()"]');
+    if(btn) { btn.innerText = "Authenticating..."; btn.disabled = true; }
+    
     const pass = document.getElementById('admin-password').value;
     const res = await fetch('/api/login', {
         method: 'POST',
@@ -23,11 +26,16 @@ async function login() {
         body: JSON.stringify({ password: pass })
     });
     const data = await res.json();
+    
     if (data.success) {
-        checkAuth();
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+        loadData();
     } else {
         document.getElementById('login-error').style.display = 'block';
     }
+    
+    if(btn) { btn.innerText = "Login"; btn.disabled = false; }
 }
 
 async function logout() {
