@@ -296,9 +296,13 @@ async function removeProfilePhoto() {
 }
 
 // Real-time Updates for Admin Dashboard
-const socket = io();
-socket.on('data_updated', () => {
-    // Only reload data if the admin is logged in (to prevent unauthorized errors)
-    if (!document.getElementById('login-screen').classList.contains('hidden')) return;
-    loadData();
-});
+try {
+    const socket = io();
+    socket.on('data_updated', () => {
+        // Only reload data if the admin is logged in (to prevent unauthorized errors)
+        if (!document.getElementById('login-screen').classList.contains('hidden')) return;
+        loadData();
+    });
+} catch (e) {
+    console.warn("Socket.io could not be loaded", e);
+}

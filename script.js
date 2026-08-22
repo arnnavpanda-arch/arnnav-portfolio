@@ -158,12 +158,14 @@ async function loadData() {
         if (numProjects > 0) {
             // Calculate dynamic translateZ based on number of projects to form a polygon
             const angleStep = 360 / numProjects;
-            let translateZ = 250; 
+            let isMobile = window.innerWidth <= 768;
+            let translateZ = isMobile ? 150 : 250; 
             
             if (numProjects > 4) {
-                translateZ = Math.max(250, Math.round( (280 / 2) / Math.tan(Math.PI / numProjects) ) + 40);
+                const baseWidth = isMobile ? 180 : 280;
+                translateZ = Math.max(isMobile ? 150 : 250, Math.round( (baseWidth / 2) / Math.tan(Math.PI / numProjects) ) + (isMobile ? 20 : 40));
             } else if (numProjects < 4 && numProjects > 0) {
-                translateZ = 200;
+                translateZ = isMobile ? 120 : 200;
             }
             
             data.projects.forEach((proj, index) => {

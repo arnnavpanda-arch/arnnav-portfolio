@@ -1053,3 +1053,34 @@ body.terminal-active #terminal-screen {
     from { opacity: 0; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* Mobile Responsiveness for 3D Gallery */
+@media (max-width: 768px) {
+    .gallery-3d h2 {
+        font-size: 40px;
+    }
+    
+    .cube-gallery {
+        width: 200px;
+        height: 200px;
+        margin: 120px auto;
+    }
+    
+    .gallery-card {
+        width: 180px;
+        height: 150px;
+        padding: 15px;
+    }
+
+    .gallery-card div {
+        font-size: 35px;
+    }
+
+    .gallery-card h3 {
+        font-size: 18px;
+    }
+    
+    /* Decrease perspective translateZ for mobile dynamically via JS? 
+       Actually, JS sets translateZ in style tag, which overrides this. 
+       We will need to modify script.js to set a smaller translateZ on mobile! */
+}
