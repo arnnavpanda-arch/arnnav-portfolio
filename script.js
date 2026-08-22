@@ -98,7 +98,7 @@ function updateInlineSlideshow(index) {
 // Dynamic Data Loading
 async function loadData() {
     try {
-        const res = await fetch('/api/data');
+        const res = await fetch('/api/data?t=' + new Date().getTime(), { cache: 'no-store' });
         const data = await res.json();
 
         // About

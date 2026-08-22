@@ -1,7 +1,9 @@
 document.addEventListener('DOMContentLoaded', checkAuth);
 
 async function checkAuth() {
-    const res = await fetch('/api/check_auth');
+    const res = await fetch('/api/check_auth?t=' + new Date().getTime(), {
+        cache: 'no-store'
+    });
     const data = await res.json();
     if (data.authenticated) {
         document.getElementById('login-screen').classList.add('hidden');
@@ -43,7 +45,7 @@ function switchTab(tabId) {
 
 // Data loading
 async function loadData() {
-    const res = await fetch('/api/data');
+    const res = await fetch('/api/data?t=' + new Date().getTime(), { cache: 'no-store' });
     const data = await res.json();
     
     if (data.about) document.getElementById('about-text').value = data.about.text || '';
