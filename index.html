@@ -72,9 +72,12 @@
     <div id="main-wrapper">
     <nav class="glass-nav">
         <div class="nav-content">
-            <div class="logo" style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="openLightbox()">
-                <img id="nav-profile-img" src="" alt="AP" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-primary); display: none;">
-                <span>AP.</span>
+            <div class="logo" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                <div style="display: flex; align-items: center; gap: 10px;" onclick="openLightbox()">
+                    <img id="nav-profile-img" src="" alt="AP" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-primary); display: none;">
+                    <span>AP.</span>
+                </div>
+                <a id="btn-download-cv" href="#" class="btn secondary-btn hidden" style="border-color: #22c55e; color: #22c55e; padding: 0.3rem 0.8rem; font-size: 0.8rem; margin-left: 10px;" download><i class="fa-solid fa-download"></i> CV</a>
             </div>
             <ul class="nav-links">
                 <li><a href="#about">About</a></li>
@@ -104,7 +107,6 @@
                 <div class="hero-actions">
                     <a href="#projects" class="btn primary-btn">View My Work</a>
                     <a href="tel:+916371132482" class="btn secondary-btn">Contact Me</a>
-                    <a id="btn-download-cv" href="#" class="btn secondary-btn hidden" style="border-color: #22c55e; color: #22c55e;" download><i class="fa-solid fa-download"></i> Download CV</a>
                 </div>
             </div>
         </section>

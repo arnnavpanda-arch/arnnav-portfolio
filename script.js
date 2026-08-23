@@ -291,13 +291,16 @@ async function loadData() {
         }
 
         // Re-initialize Vanilla Tilt for dynamically added elements
+        // Re-initialize Vanilla Tilt for dynamically added elements (only on desktop to prevent mobile gyroscope glitches)
         try {
-            VanillaTilt.init(document.querySelectorAll(".glass-card"), {
-                max: 5,
-                speed: 400,
-                glare: true,
-                "max-glare": 0.2,
-            });
+            if (window.innerWidth > 768) {
+                VanillaTilt.init(document.querySelectorAll(".glass-card"), {
+                    max: 5,
+                    speed: 400,
+                    glare: true,
+                    "max-glare": 0.2,
+                });
+            }
         } catch(e) {
             console.log("VanillaTilt not found:", e);
         }
