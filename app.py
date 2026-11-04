@@ -119,7 +119,8 @@ def get_data():
         "intro_audio": results['intro_audio'].get('file_id') if results.get('intro_audio') else None,
         "avatar_video": results['avatar_video'].get('file_id') if results.get('avatar_video') else None,
         "about_audio": results['about_audio'].get('file_id') if results.get('about_audio') else None,
-        "feedback_audio": results['feedback_audio'].get('file_id') if results.get('feedback_audio') else None
+        "feedback_audio": results['feedback_audio'].get('file_id') if results.get('feedback_audio') else None,
+        "advice_link": results['about'].get('advice_link') if results.get('about') else None
     })
 
 def notify_clients():

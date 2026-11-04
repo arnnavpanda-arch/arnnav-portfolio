@@ -69,6 +69,7 @@ async function loadData() {
         if (document.getElementById('about-email')) document.getElementById('about-email').value = data.about.email || '';
         if (document.getElementById('about-linkedin')) document.getElementById('about-linkedin').value = data.about.linkedin || '';
         if (document.getElementById('about-github')) document.getElementById('about-github').value = data.about.github || '';
+        if (document.getElementById('about-advice-link')) document.getElementById('about-advice-link').value = data.about.advice_link || data.advice_link || '';
     }
     
     renderList('skills-list', data.skills, item => `<b>${item.category}</b>: ${item.items.join(', ')}`, 'skills');
@@ -205,11 +206,12 @@ async function saveAbout() {
     const email = document.getElementById('about-email') ? document.getElementById('about-email').value : '';
     const linkedin = document.getElementById('about-linkedin') ? document.getElementById('about-linkedin').value : '';
     const github = document.getElementById('about-github') ? document.getElementById('about-github').value : '';
+    const advice_link = document.getElementById('about-advice-link') ? document.getElementById('about-advice-link').value : '';
 
     await fetch('/api/admin/about', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, name, role1, role2, location, email, linkedin, github })
+        body: JSON.stringify({ text, name, role1, role2, location, email, linkedin, github, advice_link })
     });
     alert('Brand & About information saved successfully!');
 }
