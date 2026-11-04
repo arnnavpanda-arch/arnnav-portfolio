@@ -1,6 +1,7 @@
 
 
 import os
+import mimetypes
 import gridfs
 from bson.objectid import ObjectId
 from flask import Flask, request, jsonify, send_from_directory, session, redirect, make_response
@@ -9,6 +10,7 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 from flask_socketio import SocketIO
 
+mimetypes.add_type('audio/mp4', '.m4a')
 load_dotenv()
 
 app = Flask(__name__, static_folder='static', static_url_path='')
@@ -73,15 +75,20 @@ def get_data():
     queries = [
         ('about', {}, {'_id': 0}, False),
         ('skills', {}, {'_id': 1, 'category': 1, 'items': 1}, True),
-        ('projects', {}, {'_id': 1, 'title': 1, 'description': 1, 'link': 1}, True),
+        ('projects', {}, {'_id': 1, 'title': 1, 'description': 1, 'link': 1, 'emoji': 1, 'github_link': 1, 'deploy_link': 1}, True),
         ('experience', {}, {'_id': 1, 'title': 1, 'company': 1, 'date': 1, 'description': 1}, True),
         ('education', {}, {'_id': 1, 'degree': 1, 'institution': 1, 'date': 1, 'description': 1}, True),
         ('awards', {}, {'_id': 1, 'title': 1, 'description': 1}, True),
         ('certifications', {}, {'_id': 1, 'title': 1, 'description': 1}, True),
-        ('gallery', {}, {'_id': 1, 'file_id': 1, 'caption': 1}, True),
+        ('gallery', {}, {'_id': 1, 'file_id': 1, 'caption': 1, 'is_featured': 1}, True),
         ('feedback', {}, {'_id': 1, 'name': 1, 'stars': 1}, True),
         ('resume', {}, {'_id': 0, 'file_id': 1}, False),
-        ('profile_photo', {}, {'_id': 0, 'file_id': 1}, False)
+        ('profile_photo', {}, {'_id': 0, 'file_id': 1}, False),
+        ('avatar_3d', {}, {'_id': 0, 'file_id': 1}, False),
+        ('intro_audio', {}, {'_id': 0, 'file_id': 1}, False),
+        ('avatar_video', {}, {'_id': 0, 'file_id': 1}, False),
+        ('about_audio', {}, {'_id': 0, 'file_id': 1}, False),
+        ('feedback_audio', {}, {'_id': 0, 'file_id': 1}, False)
     ]
 
     results = {}
@@ -107,7 +114,12 @@ def get_data():
         "gallery": results['gallery'],
         "feedback": results['feedback'],
         "resume": results['resume'].get('file_id') if results['resume'] else None,
-        "profile_photo": results['profile_photo'].get('file_id') if results['profile_photo'] else None
+        "profile_photo": results['profile_photo'].get('file_id') if results['profile_photo'] else None,
+        "avatar_3d": results['avatar_3d'].get('file_id') if results.get('avatar_3d') else None,
+        "intro_audio": results['intro_audio'].get('file_id') if results.get('intro_audio') else None,
+        "avatar_video": results['avatar_video'].get('file_id') if results.get('avatar_video') else None,
+        "about_audio": results['about_audio'].get('file_id') if results.get('about_audio') else None,
+        "feedback_audio": results['feedback_audio'].get('file_id') if results.get('feedback_audio') else None
     })
 
 def notify_clients():
@@ -154,12 +166,20 @@ def delete_item(collection_name, item_id):
 def edit_item(collection_name, item_id):
     if not is_auth(): return jsonify({"error": "Unauthorized"}), 401
     
-    valid_collections = ['skills', 'projects', 'experience', 'education', 'awards', 'certifications']
+    valid_collections = ['skills', 'projects', 'experience', 'education', 'awards', 'certifications', 'gallery']
     if collection_name not in valid_collections:
         return jsonify({"error": "Invalid collection"}), 400
         
     data = request.json
     db[collection_name].update_one({"_id": ObjectId(item_id)}, {"$set": data})
+    notify_clients()
+    return jsonify({"success": True})
+
+@app.route('/api/admin/featured_gallery/<item_id>', methods=['POST'])
+def set_featured_gallery(item_id):
+    if not is_auth(): return jsonify({"error": "Unauthorized"}), 401
+    db.gallery.update_many({}, {"$set": {"is_featured": False}})
+    db.gallery.update_one({"_id": ObjectId(item_id)}, {"$set": {"is_featured": True}})
     notify_clients()
     return jsonify({"success": True})
 
@@ -257,6 +277,125 @@ def upload_profile_photo():
     notify_clients()
     return jsonify({"success": True})
 
+@app.route('/api/upload_avatar_3d', methods=['POST'])
+def upload_avatar_3d():
+    if not is_auth(): return jsonify({"error": "Unauthorized"}), 401
+    if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
+    file = request.files['file']
+    if file.filename == '': return jsonify({"error": "No selected file"}), 400
+    
+    old_avatar = db.avatar_3d.find_one({})
+    if old_avatar and 'file_id' in old_avatar:
+        try: fs.delete(ObjectId(old_avatar['file_id']))
+        except: pass
+            
+    file_id = fs.put(file, filename=file.filename, content_type=file.content_type)
+    db.avatar_3d.replace_one({}, {"file_id": str(file_id), "filename": file.filename}, upsert=True)
+    notify_clients()
+    return jsonify({"success": True})
+
+@app.route('/api/admin/avatar_3d', methods=['DELETE'])
+def delete_avatar_3d():
+    if not is_auth(): return jsonify({"error": "Unauthorized"}), 401
+    old_avatar = db.avatar_3d.find_one({})
+    if old_avatar and 'file_id' in old_avatar:
+        try: fs.delete(ObjectId(old_avatar['file_id']))
+        except: pass
+        db.avatar_3d.delete_one({})
+    notify_clients()
+    return jsonify({"success": True})
+
+@app.route('/api/upload_intro_audio', methods=['POST'])
+def upload_intro_audio():
+    if not is_auth(): return jsonify({"error": "Unauthorized"}), 401
+    if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
+    file = request.files['file']
+    if file.filename == '': return jsonify({"error": "No selected file"}), 400
+    
+    old_audio = db.intro_audio.find_one({})
+    if old_audio and 'file_id' in old_audio:
+        try: fs.delete(ObjectId(old_audio['file_id']))
+        except: pass
+            
+    file_id = fs.put(file, filename=file.filename, content_type=file.content_type)
+    db.intro_audio.replace_one({}, {"file_id": str(file_id), "filename": file.filename}, upsert=True)
+    notify_clients()
+    return jsonify({"success": True})
+
+@app.route('/api/admin/intro_audio', methods=['DELETE'])
+def delete_intro_audio():
+    if not is_auth(): return jsonify({"error": "Unauthorized"}), 401
+    old_audio = db.intro_audio.find_one({})
+    if old_audio and 'file_id' in old_audio:
+        try: fs.delete(ObjectId(old_audio['file_id']))
+        except: pass
+        db.intro_audio.delete_one({})
+    notify_clients()
+    return jsonify({"success": True})
+
+@app.route('/api/upload_avatar_video', methods=['POST'])
+def upload_avatar_video():
+    if not is_auth(): return jsonify({"error": "Unauthorized"}), 401
+    if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
+    file = request.files['file']
+    if file.filename == '': return jsonify({"error": "No selected file"}), 400
+    
+    old_video = db.avatar_video.find_one({})
+    if old_video and 'file_id' in old_video:
+        try: fs.delete(ObjectId(old_video['file_id']))
+        except: pass
+            
+    file_id = fs.put(file, filename=file.filename, content_type=file.content_type)
+    db.avatar_video.replace_one({}, {"file_id": str(file_id), "filename": file.filename}, upsert=True)
+    notify_clients()
+    return jsonify({"success": True})
+
+@app.route('/api/admin/avatar_video', methods=['DELETE'])
+def delete_avatar_video():
+    if not is_auth(): return jsonify({"error": "Unauthorized"}), 401
+    old_video = db.avatar_video.find_one({})
+    if old_video and 'file_id' in old_video:
+        try: fs.delete(ObjectId(old_video['file_id']))
+        except: pass
+        db.avatar_video.delete_one({})
+    notify_clients()
+    return jsonify({"success": True})
+
+VALID_AUDIO_SECTIONS = ['about', 'feedback']
+
+@app.route('/api/upload_section_audio/<section>', methods=['POST'])
+def upload_section_audio(section):
+    if not is_auth(): return jsonify({"error": "Unauthorized"}), 401
+    if section not in VALID_AUDIO_SECTIONS: return jsonify({"error": "Invalid section"}), 400
+    if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
+    file = request.files['file']
+    if file.filename == '': return jsonify({"error": "No selected file"}), 400
+    
+    coll_name = f"{section}_audio"
+    old_audio = db[coll_name].find_one({})
+    if old_audio and 'file_id' in old_audio:
+        try: fs.delete(ObjectId(old_audio['file_id']))
+        except: pass
+            
+    file_id = fs.put(file, filename=file.filename, content_type=file.content_type)
+    db[coll_name].replace_one({}, {"file_id": str(file_id), "filename": file.filename}, upsert=True)
+    notify_clients()
+    return jsonify({"success": True})
+
+@app.route('/api/admin/section_audio/<section>', methods=['DELETE'])
+def delete_section_audio(section):
+    if not is_auth(): return jsonify({"error": "Unauthorized"}), 401
+    if section not in VALID_AUDIO_SECTIONS: return jsonify({"error": "Invalid section"}), 400
+    
+    coll_name = f"{section}_audio"
+    old_audio = db[coll_name].find_one({})
+    if old_audio and 'file_id' in old_audio:
+        try: fs.delete(ObjectId(old_audio['file_id']))
+        except: pass
+        db[coll_name].delete_one({})
+    notify_clients()
+    return jsonify({"success": True})
+
 @app.route('/api/admin/profile_photo', methods=['DELETE'])
 def delete_profile_photo():
     if not is_auth(): return jsonify({"error": "Unauthorized"}), 401
@@ -275,7 +414,10 @@ def serve_file(file_id):
         response = make_response(grid_out.read())
         response.headers['Content-Type'] = grid_out.content_type
         if 'pdf' in grid_out.content_type or 'word' in grid_out.content_type or 'officedocument' in grid_out.content_type:
-             response.headers['Content-Disposition'] = f'attachment; filename="{grid_out.filename}"'
+            if request.args.get('download') == '1':
+                response.headers['Content-Disposition'] = f'attachment; filename="{grid_out.filename}"'
+            else:
+                response.headers['Content-Disposition'] = f'inline; filename="{grid_out.filename}"'
         return response
     except Exception as e:
         return jsonify({"error": "File not found"}), 404

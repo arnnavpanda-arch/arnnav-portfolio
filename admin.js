@@ -60,10 +60,31 @@ async function loadData() {
     const res = await fetch('/api/data?t=' + new Date().getTime(), { cache: 'no-store' });
     const data = await res.json();
     
-    if (data.about) document.getElementById('about-text').value = data.about.text || '';
+    if (data.about) {
+        document.getElementById('about-text').value = data.about.text || '';
+        if (document.getElementById('about-name')) document.getElementById('about-name').value = data.about.name || '';
+        if (document.getElementById('about-role1')) document.getElementById('about-role1').value = data.about.role1 || '';
+        if (document.getElementById('about-role2')) document.getElementById('about-role2').value = data.about.role2 || '';
+        if (document.getElementById('about-location')) document.getElementById('about-location').value = data.about.location || '';
+        if (document.getElementById('about-email')) document.getElementById('about-email').value = data.about.email || '';
+        if (document.getElementById('about-linkedin')) document.getElementById('about-linkedin').value = data.about.linkedin || '';
+        if (document.getElementById('about-github')) document.getElementById('about-github').value = data.about.github || '';
+    }
     
     renderList('skills-list', data.skills, item => `<b>${item.category}</b>: ${item.items.join(', ')}`, 'skills');
-    renderList('projects-list', data.projects, item => `<b>${item.emoji || '💻'} ${item.title}</b>`, 'projects');
+    renderList('projects-list', data.projects, item => {
+        const gh = item.github_link || (item.link && item.link.includes('github.com') ? item.link : '');
+        const dp = item.deploy_link || (item.link && !item.link.includes('github.com') ? item.link : '');
+        return `
+            <div>
+                <b>${item.emoji || '💻'} ${item.title}</b>
+                <div style="font-size: 0.85rem; margin-top: 4px;">
+                    ${gh ? `<a href="${gh}" target="_blank" style="color: #60a5fa; text-decoration: underline; margin-right: 12px;">GitHub: ${gh}</a>` : '<span style="color: #9ca3af; margin-right: 12px;">(No GitHub link)</span>'}
+                    ${dp ? `<a href="${dp}" target="_blank" style="color: #34d399; text-decoration: underline;">Live Demo: ${dp}</a>` : '<span style="color: #9ca3af;">(No Live link)</span>'}
+                </div>
+            </div>
+        `;
+    }, 'projects');
     renderList('experience-list', data.experience, item => `<b>${item.title}</b> at ${item.company}`, 'experience');
     renderList('education-list', data.education, item => `<b>${item.degree}</b> at ${item.institution}`, 'education');
     renderList('awards-list', data.awards, item => `<b>${item.title}</b>`, 'awards');
@@ -98,6 +119,46 @@ async function loadData() {
             profileContainer.innerHTML = `<p style="margin-top: 1rem; color: #ef4444;">No custom profile photo uploaded.</p>`;
         }
     }
+
+    const avatarContainer = document.getElementById('avatar-current');
+    if (avatarContainer) {
+        if (data.avatar_3d) {
+            avatarContainer.innerHTML = `<p style="margin-top: 1rem; color: #3b82f6;">Current 3D Avatar Image:</p><img src="/api/file/${data.avatar_3d}" style="height:100px; border-radius:10px; margin-top:10px;">`;
+        } else {
+            avatarContainer.innerHTML = `<p style="margin-top: 1rem; color: #10b981;">Using Default 3D Avatar Image (/avatar-3d.png).</p><img src="/avatar-3d.png" style="height:100px; border-radius:10px; margin-top:10px;">`;
+        }
+    }
+
+    const audioContainer = document.getElementById('audio-current');
+    if (audioContainer) {
+        if (data.intro_audio) {
+            audioContainer.innerHTML = `<p style="margin-top: 1rem; color: #3b82f6;">Current Human Voice Audio:</p><audio controls src="/api/file/${data.intro_audio}" style="margin-top:8px;"></audio>`;
+        } else {
+            audioContainer.innerHTML = `<p style="margin-top: 1rem; color: #10b981;">Using Default Human Voice Audio (/intro-voice.m4a):</p><audio controls src="/intro-voice.m4a" style="margin-top:8px;"></audio>`;
+        }
+    }
+
+    const videoContainer = document.getElementById('video-current');
+    if (videoContainer) {
+        if (data.avatar_video) {
+            videoContainer.innerHTML = `<p style="margin-top: 1rem; color: #3b82f6;">Current Talking Avatar Video:</p><video controls src="/api/file/${data.avatar_video}" style="height:140px; border-radius:10px; margin-top:8px;"></video>`;
+        } else {
+            videoContainer.innerHTML = `<p style="margin-top: 1rem; color: #9ca3af;">No talking video uploaded (Using 3D avatar with animated mouth & hand).</p>`;
+        }
+    }
+
+    // Render Section Audio Narrations
+    ['about', 'feedback'].forEach(sec => {
+        const c = document.getElementById(`audio-${sec}-current`);
+        if (c) {
+            const fileId = data[`${sec}_audio`];
+            if (fileId) {
+                c.innerHTML = `<p style="margin-top: 0.5rem; color: #3b82f6; font-size:0.85rem;">Active Custom Audio:</p><audio controls src="/api/file/${fileId}" style="margin-top:4px; height:36px;"></audio>`;
+            } else {
+                c.innerHTML = `<p style="margin-top: 0.5rem; color: #10b981; font-size:0.85rem;">Using Default Narration Audio (/audio/${sec}.m4a):</p><audio controls src="/audio/${sec}.m4a" style="margin-top:4px; height:36px;"></audio>`;
+            }
+        }
+    });
 }
 
 function renderList(elementId, items, htmlFunc, collection) {
@@ -107,17 +168,19 @@ function renderList(elementId, items, htmlFunc, collection) {
         const div = document.createElement('div');
         div.className = 'item-row';
         
-        // Exclude gallery from being editable via prompt (since it has a file_id)
-        let editBtn = '';
-        if (collection !== 'gallery' && collection !== 'feedback') {
+        let actionBtns = '';
+        if (collection === 'gallery') {
+            const isFeat = !!item.is_featured;
+            actionBtns = `<button style="background: ${isFeat ? '#10b981' : '#f59e0b'}; margin-right: 10px;" onclick="setFeaturedGallery('${item._id}')">${isFeat ? '★ Featured (Big View)' : 'Set as Featured'}</button>`;
+        } else if (collection !== 'feedback') {
             const itemJson = JSON.stringify(item).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
-            editBtn = `<button style="background: #3b82f6; margin-right: 10px;" onclick="editItem('${collection}', '${item._id}', '${itemJson}')">Edit</button>`;
+            actionBtns = `<button style="background: #3b82f6; margin-right: 10px;" onclick="editItem('${collection}', '${item._id}', '${itemJson}')">Edit</button>`;
         }
         
         div.innerHTML = `
             <div style="display:flex; align-items:center;">${htmlFunc(item)}</div>
             <div>
-                ${editBtn}
+                ${actionBtns}
                 <button onclick="deleteItem('${collection}', '${item._id}')">Delete</button>
             </div>
         `;
@@ -125,15 +188,30 @@ function renderList(elementId, items, htmlFunc, collection) {
     });
 }
 
+async function setFeaturedGallery(id) {
+    const res = await fetch(`/api/admin/featured_gallery/${id}`, { method: 'POST' });
+    if (res.ok) {
+        loadData();
+    }
+}
+
 // Add/Edit/Delete Functions
 async function saveAbout() {
     const text = document.getElementById('about-text').value;
+    const name = document.getElementById('about-name') ? document.getElementById('about-name').value : '';
+    const role1 = document.getElementById('about-role1') ? document.getElementById('about-role1').value : '';
+    const role2 = document.getElementById('about-role2') ? document.getElementById('about-role2').value : '';
+    const location = document.getElementById('about-location') ? document.getElementById('about-location').value : '';
+    const email = document.getElementById('about-email') ? document.getElementById('about-email').value : '';
+    const linkedin = document.getElementById('about-linkedin') ? document.getElementById('about-linkedin').value : '';
+    const github = document.getElementById('about-github') ? document.getElementById('about-github').value : '';
+
     await fetch('/api/admin/about', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
+        body: JSON.stringify({ text, name, role1, role2, location, email, linkedin, github })
     });
-    alert('About saved!');
+    alert('Brand & About information saved successfully!');
 }
 
 async function addItem(collection, data) {
@@ -156,11 +234,16 @@ async function editItem(collection, id, itemJson) {
     const item = JSON.parse(itemJson);
     const updatedItem = {};
     
+    if (collection === 'projects') {
+        if (!('github_link' in item)) item.github_link = (item.link && item.link.includes('github.com')) ? item.link : '';
+        if (!('deploy_link' in item)) item.deploy_link = (item.link && !item.link.includes('github.com')) ? item.link : '';
+    }
+    
     // Prompt the user for each key (except _id)
     for (let key in item) {
         if (key === '_id') continue;
         
-        let currentValue = item[key];
+        let currentValue = item[key] || '';
         if (Array.isArray(currentValue)) {
             currentValue = currentValue.join(', ');
         }
@@ -173,6 +256,10 @@ async function editItem(collection, id, itemJson) {
         } else {
             updatedItem[key] = newValue;
         }
+    }
+    
+    if (collection === 'projects') {
+        updatedItem.link = updatedItem.deploy_link || updatedItem.github_link || '';
     }
     
     // Send PUT request
@@ -194,8 +281,21 @@ function addProject() {
     const title = document.getElementById('proj-title').value;
     const emoji = document.getElementById('proj-emoji').value;
     const description = document.getElementById('proj-desc').value;
-    const link = document.getElementById('proj-link').value;
-    addItem('projects', { title, emoji, description, link });
+    const github_link = document.getElementById('proj-github') ? document.getElementById('proj-github').value : '';
+    const deploy_link = document.getElementById('proj-deploy') ? document.getElementById('proj-deploy').value : '';
+    addItem('projects', {
+        title,
+        emoji,
+        description,
+        github_link,
+        deploy_link,
+        link: deploy_link || github_link
+    });
+    document.getElementById('proj-title').value = '';
+    document.getElementById('proj-emoji').value = '';
+    document.getElementById('proj-desc').value = '';
+    if (document.getElementById('proj-github')) document.getElementById('proj-github').value = '';
+    if (document.getElementById('proj-deploy')) document.getElementById('proj-deploy').value = '';
 }
 
 function addExperience() {
@@ -305,6 +405,108 @@ async function removeProfilePhoto() {
     const res = await fetch('/api/admin/profile_photo', { method: 'DELETE' });
     if(res.ok) {
         alert("Profile photo removed!");
+        loadData();
+    }
+}
+
+async function uploadAvatar3D() {
+    const fileInput = document.getElementById('avatar-upload');
+    if(!fileInput.files[0]) return alert("Select an image for 3D avatar!");
+    
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    
+    const res = await fetch('/api/upload_avatar_3d', { method: 'POST', body: formData });
+    if(res.ok) {
+        alert("3D Avatar updated successfully!");
+        fileInput.value = '';
+        loadData();
+    } else {
+        alert("3D Avatar upload failed.");
+    }
+}
+
+async function removeAvatar3D() {
+    if(!confirm("Reset 3D avatar to default?")) return;
+    const res = await fetch('/api/admin/avatar_3d', { method: 'DELETE' });
+    if(res.ok) {
+        alert("3D Avatar reset to default!");
+        loadData();
+    }
+}
+
+async function uploadIntroAudio() {
+    const fileInput = document.getElementById('audio-upload');
+    if(!fileInput.files[0]) return alert("Select an audio file (.mp3, .wav, .m4a)!");
+    
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    
+    const res = await fetch('/api/upload_intro_audio', { method: 'POST', body: formData });
+    if(res.ok) {
+        alert("Real Human Voice Audio uploaded successfully!");
+        fileInput.value = '';
+        loadData();
+    } else {
+        alert("Audio upload failed.");
+    }
+}
+
+async function removeIntroAudio() {
+    if(!confirm("Reset human voice audio to default?")) return;
+    const res = await fetch('/api/admin/intro_audio', { method: 'DELETE' });
+    if(res.ok) {
+        alert("Voice reset to default!");
+        loadData();
+    }
+}
+
+async function uploadAvatarVideo() {
+    const fileInput = document.getElementById('video-upload');
+    if(!fileInput.files[0]) return alert("Select a video file (.mp4, .webm)!");
+    
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    
+    const res = await fetch('/api/upload_avatar_video', { method: 'POST', body: formData });
+    if(res.ok) {
+        alert("Talking Avatar Video uploaded successfully!");
+        fileInput.value = '';
+        loadData();
+    } else {
+        alert("Video upload failed.");
+    }
+}
+
+async function removeAvatarVideo() {
+    if(!confirm("Remove talking avatar video?")) return;
+    const res = await fetch('/api/admin/avatar_video', { method: 'DELETE' });
+    if(res.ok) {
+        alert("Talking video removed! Switching back to 3D living avatar.");
+        loadData();
+    }
+}
+
+async function uploadSectionAudio(sec) {
+    const fileInput = document.getElementById(`audio-${sec}-file`);
+    if (!fileInput || !fileInput.files[0]) return alert(`Please select an audio file for ${sec}!`);
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    const res = await fetch(`/api/upload_section_audio/${sec}`, { method: 'POST', body: formData });
+    if (res.ok) {
+        alert(`${sec.toUpperCase()} audio uploaded successfully!`);
+        fileInput.value = '';
+        loadData();
+    } else {
+        alert(`Failed to upload ${sec} audio.`);
+    }
+}
+
+async function removeSectionAudio(sec) {
+    if (!confirm(`Reset ${sec} audio to default?`)) return;
+    const res = await fetch(`/api/admin/section_audio/${sec}`, { method: 'DELETE' });
+    if (res.ok) {
+        alert(`${sec.toUpperCase()} audio reset to default!`);
         loadData();
     }
 }
